@@ -54,19 +54,18 @@ func main() {
 
 // --- БЛОК ИНИЦИАЛИЗАЦИИ GOOGLE DRIVE API ---
 func initGoogleDrive() {
-	// Путь внутри контейнера, куда мы будем прокидывать секретный ключ
-	credPath := "/app/credentials/google-key.json"
+	// Вместо файла ищем текстовую переменную окружения
+	credJSON := os.Getenv("GOOGLE_CREDENTIALS_JSON")
 
-	// Проверяем, существует ли файл физически
-	if _, err := os.Stat(credPath); os.IsNotExist(err) {
-		log.Println("[Предупреждение] Файл google-key.json не найден. Работа с Colab/Drive API отключена.")
+	if credJSON == "" {
+		log.Println("[Предупреждение] Переменная GOOGLE_CREDENTIALS_JSON не задана. Работа с Drive API отключена.")
 		return
 	}
 
-	// Если файл на месте, пытаемся авторизоваться в Google
-	log.Println("[*] Обнаружен ключ Google. Попытка авторизации через Service Account...")
+	log.Println("[*] Обнаружена переменная Google. Попытка авторизации через Service Account...")
 	
-	service, err := drive.NewService(ctx, option.WithCredentialsFile(credPath), option.WithScopes(drive.DriveScope))
+	// Авторизуемся напрямую из текстовой строки JSON
+	service, err := drive.NewService(ctx, option.WithCredentialsJSON([]byte(credJSON)), option.WithScopes(drive.DriveScope))
 	if err != nil {
 		log.Printf("[-] Ошибка авторизации в Google Drive API: %v", err)
 		return

@@ -1,5 +1,8 @@
-module microservice-go
+module queue
 
-go 1.20
+go 1.26
 
-require github.com/rabbitmq/amqp091-go v1.12.0 // indirect
+require (
+	github.com/rabbitmq/amqp091-go v1.12.0
+	github.com/redis/go-redis/v9 v9.5.1
+)

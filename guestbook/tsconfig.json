@@ -1,1 +1,13 @@
-
+{
+  "compilerOptions": {
+    "target": "ES6",                          /* В какой стандарт JS компилировать (ES6 поддерживают все браузеры) */
+    "module": "CommonJS",
+    "rootDir": "./src",                       /* Где лежат ваши файлы .ts */
+    "outDir": "./static/js",                  /* КУДА складывать готовый .js (Go-сервер заберет его отсюда) */
+    "strict": true,                           /* Строгая проверка типов */
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*"]                     /* Компилировать всё внутри папки src */
+}

@@ -1,3 +1,4 @@
+
 # --- ЭТАП 1: Сборка фронтенда (TypeScript) ---
 FROM node:20-alpine AS frontend-builder
 WORKDIR /app
@@ -11,7 +12,7 @@ COPY static/ ./static
 RUN npm install -g typescript && tsc
 
 # --- ЭТАП 2: Сборка бэкенда (Go) ---
-FROM golang:1.23-alpine AS backend-builder
+FROM golang:1.26-alpine AS backend-builder
 WORKDIR /app
 
 # Копируем файлы модулей Go (если они есть в корне)

@@ -13,6 +13,7 @@ RUN tsc
 
 # --- ЭТАП 2: Установка Go и сборка бэкенда ---
 FROM golang:1.26-alpine AS backend-builder
+
 WORKDIR /app
 
 # Копируем файлы модулей Go (если они есть)

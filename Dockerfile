@@ -13,6 +13,7 @@ RUN npm install -g typescript && tsc
 
 # --- ЭТАП 2: Сборка бэкенда (Go) ---
 FROM golang:1.26-alpine AS backend-builder
+
 WORKDIR /app
 
 # Копируем файлы модулей Go (если они есть в корне)

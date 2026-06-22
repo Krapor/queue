@@ -1,1 +1,40 @@
+# --- ЭТАП 1: Установка Node.js и сборка TypeScript ---
+FROM node:20-alpine AS frontend-builder
+WORKDIR /app
 
+# Копируем конфигурацию TS и исходный код фронтенда
+COPY tsconfig.json ./
+COPY src/ ./src
+COPY static/ ./static
+
+# Устанавливаем компилятор TypeScript и запускаем сборку
+RUN npm install -g typescript
+RUN tsc
+
+# --- ЭТАП 2: Установка Go и сборка бэкенда ---
+FROM golang:1.23-alpine AS backend-builder
+WORKDIR /app
+
+# Копируем файлы модулей Go (если они есть)
+COPY go.mod* go.sum* ./
+RUN go mod download || true
+
+# Копируем код сервера и собираем оптимизированный бинарник под Linux
+COPY main.go ./
+RUN CGO_ENABLED=0 GOOS=linux go build -o server main.go
+
+# --- ЭТАП 3: Минимальный финальный образ для работы на Render ---
+FROM alpine:latest
+WORKDIR /root/
+
+# Забираем из первого этапа скомпилированный JS и статику
+COPY --from=frontend-builder /app/static ./static
+
+# Забираем из второго этапа готовый Go-сервер
+COPY --from=backend-builder /app/server .
+
+# Открываем порт (Render автоматически прокинет нужный порт через переменную $PORT)
+EXPOSE 8080
+
+# Команда для запуска нашего приложения
+CMD ["./server"]

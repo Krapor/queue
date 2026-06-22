@@ -1,6 +1,6 @@
 module queue
 
-go 1.26
+go 1.23
 
 require (
 	github.com/rabbitmq/amqp091-go v1.12.0

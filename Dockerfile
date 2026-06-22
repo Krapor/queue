@@ -1,42 +1,23 @@
-# =====================================================================
-# ЭТАП 1: Сборка управляющего приложения на Go (Тяжелый образ)
-# =====================================================================
-FROM golang:1.26-alpine AS builder
-
-# Устанавливаем git, так как Go использует его для скачивания библиотек Google API
-RUN apk add --no-cache git
-
-WORKDIR /build
-
-# Копируем файлы конфигурации зависимостей
-COPY go.mod go.sum ./
-RUN go mod download
-
-# Копируем весь исходный код проекта
-COPY . .
-
-# Компилируем оптимизированный бинарник под Linux (без лишней отладочной информации)
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o orchestrator .
-
-# =====================================================================
-# ЭТАП 2: Финальный легковесный контейнер с Bash и Google окружением
-# =====================================================================
-FROM alpine:3.19
-
-# Устанавливаем Bash, Curl (для работы с API) и CA-Сертификаты (чтобы работал HTTPS с Google)
-RUN apk add --no-cache bash curl ca-certificates
-
+# Этап фронтенда
+FROM node:20-alpine AS frontend-builder
 WORKDIR /app
+COPY tsconfig.json ./
+COPY src/ ./src
+COPY static/ ./static
+RUN npm install -g typescript && tsc
 
-# Копируем скомпилированный Go-оркестратор из первого этапа
-COPY --from=builder /build/orchestrator .
+# Этап бэкенда
+FROM golang:1.23-alpine AS backend-builder
+WORKDIR /app
+COPY go.mod* go.sum* ./
+RUN go mod download || true
+COPY main.go ./
+RUN CGO_ENABLED=0 GOOS=linux go build -o server main.go
 
-# Создаем папку для хранения JSON-ключей авторизации Google Service Account, которую мы получили на Шаге 2
-RUN mkdir -p /app/credentials
-
-# Указываем порт, который будет слушать наше Go-приложение
-EXPOSE 10000
-
-# Точка входа: запускаем наш оркестратор
-CMD ["./orchestrator"]
-
+# Финал
+FROM alpine:latest
+WORKDIR /root/
+COPY --from=frontend-builder /app/static ./static
+COPY --from=backend-builder /app/server .
+EXPOSE 8080
+CMD ["./server"]

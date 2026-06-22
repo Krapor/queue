@@ -174,8 +174,9 @@ func handleSendTask(w http.ResponseWriter, r *http.Request) {
 	rand.Seed(time.Now().UnixNano())
 	taskID := fmt.Sprintf("TASK-%d", rand.Intn(900000)+100000)
 
-	taskJSON := fmt.Sprintf(`{"task_id": "%s", "timestamp": "%s", "command": "run_matrix_multiplication"}`, 
-		taskID, time.Now().Format(time.RFC3339))
+	// Формируем квантовую задачу
+taskJSON := fmt.Sprintf(`{"task_id": "%s", "timestamp": "%s", "command": "run_quantum_test"}`, 
+	taskID, time.Now().Format(time.RFC3339))
 
 	err := amqpChan.PublishWithContext(ctx, "", "tasks", false, false,
 		amqp.Publishing{
